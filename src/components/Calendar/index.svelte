@@ -5,14 +5,15 @@
 
     const WEEK_DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     const MONTHS = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEPT','OCT','NOV','DEC']
-    export let selectedStartDate = new Date();
-    export let selectedEndStartDate = new Date(2023,4,25);
     const currentDate = new Date();
     let startDate = currentDate ;
     let endDate = new Date();
     let startMonth = currentDate.getMonth() , startYear = currentDate.getFullYear() , startDay = currentDate.getDate();
     let endMonth = endDate.getMonth() + 1 , endYear = endDate.getFullYear();
     let showModal = false;
+    export let selectedStartDate = new Date(currentDate.getFullYear(),currentDate.getMonth(),currentDate.getDate(),0,0,0);
+    export let selectedEndStartDate = new Date(2023,4,25,0,0,0);
+    
     // let selectedDatesRange = [{start :selectedStartDate,end:selectedEndStartDate}];
 
 
