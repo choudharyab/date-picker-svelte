@@ -6,14 +6,15 @@
 
     const WEEK_DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     const MONTHS = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEPT','OCT','NOV','DEC']
-    let selectedStartDate = new Date();
-    let selectedEndStartDate = new Date(2023,5,5);
+    export let selectedStartDate = new Date();
+    export let selectedEndStartDate = new Date(2023,4,25);
     const currentDate = new Date();
     let startDate = currentDate ;
     let endDate = new Date();
     let startMonth = currentDate.getMonth() , startYear = currentDate.getFullYear() , startDay = currentDate.getDate();
-    let endMonth = endDate.getMonth() +1 , endYear = endDate.getFullYear();
+    let endMonth = endDate.getMonth() + 1 , endYear = endDate.getFullYear();
     let showModal = false;
+    let days;
 
 
 
@@ -48,7 +49,7 @@
     }
 
     function getDaysInMonth(year, month) {
-        return new Date(year, month , 0).getDate();
+        return new Date(year, month+1,0).getDate();
     }
 
  
@@ -80,8 +81,10 @@ function getCalendarDaysForStartDate(startYear, startMonth,startDay) {
         };
         days.push(day);
     }
+    console.log("test",days);
     return days;
 }
+
 
 function getCalendarDaysForEndDate(endYear, endMonth) {
     const daysInMonth = getDaysInMonth(endYear, endMonth);
@@ -114,18 +117,24 @@ function getCalendarDaysForEndDate(endYear, endMonth) {
 }
 
 function calendarStartHandle(day){
-    selectedStartDate = day.date;
-    getCalendarDaysForStartDate(selectedStartDate.getFullYear(),selectedStartDate.getMonth(),selectedStartDate.getDate());
+    if(selectedStartDate < selectedEndStartDate){
+        if(selectedStartDate > day.date){
+            selectedStartDate = day.date;
+            getCalendarDaysForStartDate(selectedStartDate.getFullYear(),selectedStartDate.getMonth(),selectedStartDate.getDate());
+        }
+
+        if(selectedEndStartDate < day.date){
+            selectedEndStartDate = day.date;
+           getCalendarDaysForEndDate(selectedEndStartDate.getFullYear(),selectedEndStartDate.getMonth(),selectedEndStartDate.getDate());
+
+        }
+    }
 }
 
-function calendarEndHandle(day){
-    selectedEndStartDate = day.date;
-    getCalendarDaysForEndDate(selectedEndStartDate.getFullYear(),selectedEndStartDate.getMonth());
-}
+ onMount(() => {
+    days = getCalendarDaysForStartDate(selectedStartDate.getFullYear(),selectedStartDate.getMonth(),selectedStartDate.getDate());
+});
 
-onMount(() => {
-    getCalendarDaysForStartDate(selectedStartDate.getFullYear(),selectedStartDate.getMonth(),selectedStartDate.getDate());
-  });
 
   
 
@@ -160,12 +169,8 @@ onMount(() => {
 
         <div class="left-days">
             {#each getCalendarDaysForStartDate(startYear, startMonth , startDay) as day, i} 
-            {#if day.color == true}
-                <div on:click={calendarStartHandle(day)} class="day" style="background-color: red;color:#fff;">{day.dayOfMonth == 0 ? ' ' : day.dayOfMonth}</div>
-            {:else}
-            <div on:click={calendarStartHandle(day)} class="day">{day.dayOfMonth == 0 ? ' ' : day.dayOfMonth}</div>
-            {/if}            
-        {/each}
+                <div key={day.date} on:click={calendarStartHandle(day)} class={day.color ? "day selected" : "day"}>{day.dayOfMonth == 0 ? ' ' : day.dayOfMonth}</div>
+            {/each}
         </div>
 
 
@@ -191,11 +196,7 @@ onMount(() => {
 
         <div class="left-days">
             {#each getCalendarDaysForEndDate(endYear, endMonth) as day, i} 
-            {#if day.color == true}
-            <div class="day"  on:click={calendarEndHandle(day)} style="background-color: red;color:#fff;">{day.dayOfMonth == 0 ? ' ' : day.dayOfMonth}</div>
-            {:else}
-                <div  on:click={calendarEndHandle(day)} class="day">{day.dayOfMonth == 0 ? ' ' : day.dayOfMonth}</div>
-            {/if}
+            <div key={day.date} class={day.color ? "day selected" : "day"}  on:click={calendarStartHandle(day)}>{day.dayOfMonth == 0 ? ' ' : day.dayOfMonth}</div>
             {/each}
         </div>
 
@@ -332,6 +333,11 @@ onMount(() => {
     img:hover {
         background-color: #f7f7f7;
         cursor: pointer;
+    }
+
+    .selected {
+        background-color: #e40046;
+        color : #FFFFFF;
     }
 
 </style>
