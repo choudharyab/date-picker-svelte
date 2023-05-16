@@ -2,7 +2,6 @@
     import left from "../../../src/left.png";
     import right from "../../../src/right.png";
     import Modal from "../Modal.svelte";
-    import { onMount } from 'svelte';
 
     const WEEK_DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     const MONTHS = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEPT','OCT','NOV','DEC']
@@ -14,8 +13,7 @@
     let startMonth = currentDate.getMonth() , startYear = currentDate.getFullYear() , startDay = currentDate.getDate();
     let endMonth = endDate.getMonth() + 1 , endYear = endDate.getFullYear();
     let showModal = false;
-    let days;
-
+    // let selectedDatesRange = [{start :selectedStartDate,end:selectedEndStartDate}];
 
 
     function handleStartDateBackyear(){
@@ -64,7 +62,8 @@ function getCalendarDaysForStartDate(startYear, startMonth,startDay) {
             isWeekend:  firstDayOfWeek === 0 || firstDayOfWeek === 6,
             dayOfMonth: 0,
             date : new Date(startYear,startMonth,i),
-            color : false,
+            endDateFlag : new Date(startYear,startMonth,i).getTime() == selectedEndStartDate.getTime(),
+            startDateFlag : new Date(startYear,startMonth,i).getTime() == selectedStartDate.getTime(),
         };
         days.push(day);
     }
@@ -77,11 +76,13 @@ function getCalendarDaysForStartDate(startYear, startMonth,startDay) {
             isWeekend: isWeekend,
             dayOfMonth: i,
             date : new Date(startYear , startMonth,i),
-            color : (new Date(startYear,startMonth,i) >= selectedStartDate  &&  new Date(startYear,startMonth,i) <=selectedEndStartDate),
+            endDateFlag : new Date(startYear,startMonth,i).getTime() == selectedEndStartDate.getTime(),
+            startDateFlag : new Date(startYear,startMonth,i).getTime() == selectedStartDate.getTime(),
+
+          //  color : (new Date(startYear,startMonth,i) >= selectedStartDate  &&  new Date(startYear,startMonth,i) <=selectedEndStartDate),
         };
         days.push(day);
     }
-    console.log("test",days);
     return days;
 }
 
@@ -96,7 +97,10 @@ function getCalendarDaysForEndDate(endYear, endMonth) {
         isWeekend:  firstDayOfWeek === 0 || firstDayOfWeek === 6,
         dayOfMonth: 0 ,
         date : new Date(endYear,endMonth,i),
-        color : false,
+        startDateFlag : new Date(endYear,endMonth,i).getTime() == selectedStartDate.getTime(),
+        endDateFlag : new Date(endYear,endMonth,i).getTime() == selectedEndStartDate.getTime(),
+
+     //   color : false,
       };
       days.push(day);
     }
@@ -109,7 +113,10 @@ function getCalendarDaysForEndDate(endYear, endMonth) {
         isWeekend: isWeekend,
         dayOfMonth: i,
         date : new Date(endYear , endMonth,i),
-        color : (new Date(endYear,endMonth,i) >= selectedStartDate  &&  new Date(endYear,endMonth,i) <=selectedEndStartDate),
+        startDateFlag : new Date(endYear,endMonth,i).getTime() == selectedStartDate.getTime(),
+        endDateFlag : new Date(endYear,endMonth,i).getTime() == selectedEndStartDate.getTime(),
+
+     //   color : (new Date(endYear,endMonth,i) >= selectedStartDate  &&  new Date(endYear,endMonth,i) <=selectedEndStartDate),
     };
       days.push(day);
     }
@@ -118,25 +125,21 @@ function getCalendarDaysForEndDate(endYear, endMonth) {
 
 function calendarStartHandle(day){
     if(selectedStartDate < selectedEndStartDate){
-        if(selectedStartDate > day.date){
+        if(selectedStartDate > day.date && day.date < selectedEndStartDate){
             selectedStartDate = day.date;
             getCalendarDaysForStartDate(selectedStartDate.getFullYear(),selectedStartDate.getMonth(),selectedStartDate.getDate());
+        }else if(day.date > selectedStartDate && day.date < selectedEndStartDate){
+            selectedStartDate = day.date;
+            getCalendarDaysForStartDate(selectedStartDate.getFullYear(),selectedStartDate.getMonth(),selectedStartDate.getDate());
+            
         }
 
-        if(selectedEndStartDate < day.date){
+        if(selectedEndStartDate < day.date && selectedStartDate < day.date){
             selectedEndStartDate = day.date;
            getCalendarDaysForEndDate(selectedEndStartDate.getFullYear(),selectedEndStartDate.getMonth(),selectedEndStartDate.getDate());
-
         }
     }
 }
-
- onMount(() => {
-    days = getCalendarDaysForStartDate(selectedStartDate.getFullYear(),selectedStartDate.getMonth(),selectedStartDate.getDate());
-});
-
-
-  
 
 
 </script>
@@ -169,7 +172,15 @@ function calendarStartHandle(day){
 
         <div class="left-days">
             {#each getCalendarDaysForStartDate(startYear, startMonth , startDay) as day, i} 
-                <div key={day.date} on:click={calendarStartHandle(day)} class={day.color ? "day selected" : "day"}>{day.dayOfMonth == 0 ? ' ' : day.dayOfMonth}</div>
+            {#if day.startDateFlag == true || day.endDateFlag == true}
+            <div key={day.date} class="day selected"  on:click={calendarStartHandle(day)}>{day.dayOfMonth == 0 ? ' ' : day.dayOfMonth}</div>
+            {:else if day.date > selectedStartDate && day.date < selectedEndStartDate} 
+            <div key={day.date} class={day.date > selectedStartDate && day.date < selectedEndStartDate && day.dayOfMonth !=0 ? "day selected-range" : "day"}  on:click={calendarStartHandle(day)}>{day.dayOfMonth == 0 ? ' ' : day.dayOfMonth}</div>
+            {:else}
+            <div key={day.date} class="day"  on:click={calendarStartHandle(day)}>{day.dayOfMonth == 0 ? ' ' : day.dayOfMonth}</div>
+
+            {/if}
+                <!-- <div key={day.date} on:click={calendarStartHandle(day)} class={day.date >= selectedStartDate && day.date <= selectedEndStartDate ? "day selected" : "day"}>{day.dayOfMonth == 0 ? ' ' : day.dayOfMonth}</div> -->
             {/each}
         </div>
 
@@ -196,7 +207,16 @@ function calendarStartHandle(day){
 
         <div class="left-days">
             {#each getCalendarDaysForEndDate(endYear, endMonth) as day, i} 
-            <div key={day.date} class={day.color ? "day selected" : "day"}  on:click={calendarStartHandle(day)}>{day.dayOfMonth == 0 ? ' ' : day.dayOfMonth}</div>
+            {#if day.startDateFlag == true || day.endDateFlag == true}
+            <div key={day.date} class="day selected"  on:click={calendarStartHandle(day)}>{day.dayOfMonth == 0 ? ' ' : day.dayOfMonth}</div>
+
+            {:else if day.date > selectedStartDate && day.date < selectedEndStartDate} 
+            <div key={day.date} class={day.date > selectedStartDate && day.date < selectedEndStartDate && day.dayOfMonth != 0 ? "day selected-range" : "day"}  on:click={calendarStartHandle(day)}>{day.dayOfMonth == 0 ? ' ' : day.dayOfMonth}</div>
+            {:else}
+            <div key={day.date} class="day"  on:click={calendarStartHandle(day)}>{day.dayOfMonth == 0 ? ' ' : day.dayOfMonth}</div>
+
+            {/if}
+            <!-- <div key={day.date} class={day.date >= selectedStartDate && day.date <= selectedEndStartDate ? "day selected" : "day"}  on:click={calendarStartHandle(day)}>{day.dayOfMonth == 0 ? ' ' : day.dayOfMonth}</div> -->
             {/each}
         </div>
 
@@ -326,7 +346,7 @@ function calendarStartHandle(day){
     }
 
     .day:hover {
-        background-color: #f7f7f7;
+        /* background-color: transparent; */
         cursor: pointer;
     }
 
@@ -338,6 +358,11 @@ function calendarStartHandle(day){
     .selected {
         background-color: #e40046;
         color : #FFFFFF;
+    }
+
+    .selected-range {
+        background-color: #ffe4ec;
+        color: #FFFFFF;
     }
 
 </style>
