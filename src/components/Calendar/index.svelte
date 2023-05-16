@@ -235,7 +235,6 @@ function calendarStartHandle(day){
         display: flex;
         gap: 2rem;
         text-align: center;
-        width: var(--button-width);
         text-decoration: none;
         cursor: pointer;
         background: #FFFFFF;
