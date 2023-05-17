@@ -12,10 +12,10 @@
     let endMonth = endDate.getMonth() + 1 , endYear = endDate.getFullYear();
     let showModal = false;
     export let selectedStartDate = new Date(currentDate.getFullYear(),currentDate.getMonth(),currentDate.getDate(),0,0,0);
-    export let selectedEndStartDate = new Date(2023,4,25,0,0,0);
-    
+    //export let selectedEndStartDate = new Date(2023,4,25,0,0,0);
+    export let selectedEndStartDate = new Date(currentDate.getFullYear(),currentDate.getMonth(),currentDate.getDate()+1,0,0,0);
     // let selectedDatesRange = [{start :selectedStartDate,end:selectedEndStartDate}];
-
+    let counter = 0 ;
 
     function handleStartDateBackyear(){
         startDate.setMonth(startDate.getMonth() -1);
@@ -63,8 +63,8 @@ function getCalendarDaysForStartDate(startYear, startMonth,startDay) {
             isWeekend:  firstDayOfWeek === 0 || firstDayOfWeek === 6,
             dayOfMonth: 0,
             date : new Date(startYear,startMonth,i),
-            endDateFlag : new Date(startYear,startMonth,i).getTime() == selectedEndStartDate.getTime(),
-            startDateFlag : new Date(startYear,startMonth,i).getTime() == selectedStartDate.getTime(),
+            endDateFlag : selectedEndStartDate != null ? new Date(startYear,startMonth,i).getTime() == selectedEndStartDate.getTime() : false,
+            startDateFlag :selectedStartDate != null ? new Date(startYear,startMonth,i).getTime() == selectedStartDate.getTime() : false,
         };
         days.push(day);
     }
@@ -77,8 +77,8 @@ function getCalendarDaysForStartDate(startYear, startMonth,startDay) {
             isWeekend: isWeekend,
             dayOfMonth: i,
             date : new Date(startYear , startMonth,i),
-            endDateFlag : new Date(startYear,startMonth,i).getTime() == selectedEndStartDate.getTime(),
-            startDateFlag : new Date(startYear,startMonth,i).getTime() == selectedStartDate.getTime(),
+            endDateFlag : selectedEndStartDate != null ? new Date(startYear,startMonth,i).getTime() == selectedEndStartDate.getTime() : false,
+            startDateFlag :selectedStartDate != null ? new Date(startYear,startMonth,i).getTime() == selectedStartDate.getTime() : false,
 
           //  color : (new Date(startYear,startMonth,i) >= selectedStartDate  &&  new Date(startYear,startMonth,i) <=selectedEndStartDate),
         };
@@ -98,8 +98,8 @@ function getCalendarDaysForEndDate(endYear, endMonth) {
         isWeekend:  firstDayOfWeek === 0 || firstDayOfWeek === 6,
         dayOfMonth: 0 ,
         date : new Date(endYear,endMonth,i),
-        startDateFlag : new Date(endYear,endMonth,i).getTime() == selectedStartDate.getTime(),
-        endDateFlag : new Date(endYear,endMonth,i).getTime() == selectedEndStartDate.getTime(),
+        startDateFlag :selectedStartDate != null ? new Date(endYear,endMonth,i).getTime() == selectedStartDate.getTime() : false,
+        endDateFlag : selectedEndStartDate != null ? new Date(endYear,endMonth,i).getTime() == selectedEndStartDate.getTime() : false,
 
      //   color : false,
       };
@@ -114,8 +114,8 @@ function getCalendarDaysForEndDate(endYear, endMonth) {
         isWeekend: isWeekend,
         dayOfMonth: i,
         date : new Date(endYear , endMonth,i),
-        startDateFlag : new Date(endYear,endMonth,i).getTime() == selectedStartDate.getTime(),
-        endDateFlag : new Date(endYear,endMonth,i).getTime() == selectedEndStartDate.getTime(),
+        startDateFlag : selectedStartDate != null ? new Date(endYear,endMonth,i).getTime() == selectedStartDate.getTime() : false,
+        endDateFlag :  selectedEndStartDate != null ? new Date(endYear,endMonth,i).getTime() == selectedEndStartDate.getTime() : false,
 
      //   color : (new Date(endYear,endMonth,i) >= selectedStartDate  &&  new Date(endYear,endMonth,i) <=selectedEndStartDate),
     };
@@ -125,19 +125,27 @@ function getCalendarDaysForEndDate(endYear, endMonth) {
 }
 
 function calendarStartHandle(day){
+    counter++;
+    if(counter >= 2){
+        selectedStartDate = null;
+        selectedEndStartDate = null;
+        counter = 0 ;
+    }
+    if(selectedStartDate == null) selectedStartDate = day.date;
+    if(selectedStartDate < day.date && selectedEndStartDate == null) selectedEndStartDate = day.date;
     if(selectedStartDate < selectedEndStartDate){
         if(selectedStartDate > day.date && day.date < selectedEndStartDate){
             selectedStartDate = day.date;
             getCalendarDaysForStartDate(selectedStartDate.getFullYear(),selectedStartDate.getMonth(),selectedStartDate.getDate());
         }else if(day.date > selectedStartDate && day.date < selectedEndStartDate){
             selectedStartDate = day.date;
-            getCalendarDaysForStartDate(selectedStartDate.getFullYear(),selectedStartDate.getMonth(),selectedStartDate.getDate());
+          //  getCalendarDaysForStartDate(selectedStartDate.getFullYear(),selectedStartDate.getMonth(),selectedStartDate.getDate());
             
         }
 
         if(selectedEndStartDate < day.date && selectedStartDate < day.date){
             selectedEndStartDate = day.date;
-           getCalendarDaysForEndDate(selectedEndStartDate.getFullYear(),selectedEndStartDate.getMonth(),selectedEndStartDate.getDate());
+          // getCalendarDaysForEndDate(selectedEndStartDate.getFullYear(),selectedEndStartDate.getMonth(),selectedEndStartDate.getDate());
         }
     }
 }
@@ -147,7 +155,7 @@ function calendarStartHandle(day){
 <div>
     <button class="calendar-button" on:click={() => (showModal = true)} type="button">
         <i class="fa fa-calendar"></i>
-        <span>{selectedStartDate.getDate()} {MONTHS[selectedStartDate.getMonth()]} {selectedStartDate.getFullYear()} - {selectedEndStartDate.getDate()} {MONTHS[selectedEndStartDate.getMonth()]} {selectedStartDate.getFullYear()}</span>
+        <span>{selectedStartDate != null ? selectedStartDate.getDate() : ''} {selectedStartDate != null ? MONTHS[selectedStartDate.getMonth()] : ''} {selectedStartDate != null  ? selectedStartDate.getFullYear(): ''} - {selectedEndStartDate != null ? selectedEndStartDate.getDate(): ''} {selectedEndStartDate != null ? MONTHS[selectedEndStartDate.getMonth()] : ''} {selectedEndStartDate  != null ? selectedEndStartDate.getFullYear() : ''}</span>
         <i class="fa fa-angle-down"></i>
 </button>
 
